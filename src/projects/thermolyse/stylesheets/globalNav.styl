@@ -1,0 +1,64 @@
+$navLinkBorder=1px solid rgba(42,157,143,0.18)
+$emptyBorder=1px solid transparent
+$minHeight=500px
+
+#g-global-nav-container
+  background #ffffff
+  border-right 1px solid rgba(42,157,143,0.16)
+  box-shadow 8px 0 28px rgba(30,58,95,0.10)
+
+.g-global-nav-main
+  min-height $minHeight - 12px
+  padding 24px 12px
+  background #ffffff
+  box-shadow none
+
+ul.g-global-nav
+  padding-left 0
+  margin 0
+
+  > li
+    list-style-type none
+    border $emptyBorder
+    margin 8px 0
+    border-radius 16px
+    transition all 0.2s ease
+
+  > li:hover:not(.g-active)
+    background #e8f4fb
+
+    .g-nav-link
+      color #2A9D8F
+
+    i
+      color #2A9D8F
+
+  > li.g-active
+    background #e8f4fb
+    border $navLinkBorder
+    box-shadow 0 8px 20px rgba(30,58,95,0.10)
+
+    .g-nav-link
+      color #1E3A5F
+
+    i
+      color #2A9D8F
+
+.g-nav-link
+  display flex
+  align-items center
+  gap 10px
+  padding 13px 16px
+  line-height 1.4
+  font-size 17px
+  font-weight 700
+  color #1E3A5F
+  text-decoration none
+
+  &:hover
+    text-decoration none
+
+  i
+    color #2A9D8F
+    font-size 18px
+    margin 0
