@@ -3,7 +3,8 @@ set -e
 
 PROJECT_TEMPLATE=${PROJECT_TEMPLATE:-thermolyse}
 
-ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
 TEMPLATE_DIR="$ROOT_DIR/src/projects/${PROJECT_TEMPLATE}"
 GIRDER_DIR="$ROOT_DIR/src/girder/girder/web/src"
 

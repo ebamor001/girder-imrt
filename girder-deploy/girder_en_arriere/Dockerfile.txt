@@ -1,0 +1,89 @@
+# =============================================================================
+# GIRDER-en-arriere — Celery Worker
+# Multi-stage : base-en-arriere → dev | prod
+#
+# Usage :
+#   docker build --target dev  -t girder-en-arriere:dev  -f girder-en-arriere/Dockerfile .
+#   docker build --target prod -t girder-en-arriere:prod -f girder-en-arriere/Dockerfile .
+# =============================================================================
+
+ARG BASE_IMAGE=girder-base:latest
+FROM ${BASE_IMAGE} AS base-en-arriere
+
+
+# Définir les variables de proxy comme arguments de build (optionnels)
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+
+# Si les arguments sont fournis, les exporter comme variables d'environnement
+RUN if [ -n "$HTTP_PROXY" ]; then \
+    echo "export http_proxy=$HTTP_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export HTTP_PROXY=$HTTP_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export https_proxy=$HTTPS_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export HTTPS_PROXY=$HTTPS_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export no_proxy=$NO_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export NO_PROXY=$NO_PROXY" >> /etc/profile.d/proxy.sh; \
+    fi
+
+# ── Dépendances système pour le traitement scientifique ──────────────────────
+# Requises par nibabel et ses dépendances (numpy, scipy...)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Bibliothèques de calcul scientifique
+    libopenblas-dev \
+    liblapack-dev \
+    gfortran \
+    # Traitement d'images médicales
+    libglib2.0-0 \
+    libgomp1 \
+    # Compression (formats NIfTI compressés .nii.gz)
+    zlib1g-dev \
+    libbz2-dev \
+    telnet \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# STAGE DEV
+# =============================================================================
+FROM base-en-arriere AS dev
+
+ENV GIRDER_ENV=dev \
+    # Port différent du girder-en-avant pour éviter les conflits sur la même machine
+    DEBUGPY_PORT=5679 \
+    DEBUGPY_WAIT=0 \
+    CELERY_LOGLEVEL=DEBUG
+
+RUN pip install debugpy
+
+COPY --chown=girder:girder girder-en-arriere/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER girder
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["worker"]
+
+# =============================================================================
+# STAGE PROD
+# =============================================================================
+FROM base-en-arriere AS prod
+
+ENV GIRDER_ENV=prod \
+    CELERY_LOGLEVEL=INFO
+
+COPY --chown=girder:girder src/girder-worker/     /opt/girder/src/girder-worker/
+COPY --chown=girder:girder src/plugins_worker/    /opt/girder/src/plugins_worker/
+
+# nibabel et ses dépendances sont déclarés dans pyproject.toml de plugins_worker
+RUN pip install /opt/girder/src/girder-worker/ \
+    && pip install /opt/girder/src/plugins_worker/
+
+COPY --chown=girder:girder girder-en-arriere/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER girder
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["worker"]

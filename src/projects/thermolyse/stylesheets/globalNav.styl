@@ -1,11 +1,11 @@
-$navLinkBorder=1px solid rgba(42,157,143,0.18)
+$navLinkBorder=1px solid rgba(231,111,81,0.18)
 $emptyBorder=1px solid transparent
 $minHeight=500px
 
 #g-global-nav-container
   background #ffffff
-  border-right 1px solid rgba(42,157,143,0.16)
-  box-shadow 8px 0 28px rgba(30,58,95,0.10)
+  border-right 1px solid rgba(231,111,81,0.18)
+  box-shadow 8px 0 28px rgba(25,58,90,0.10)
 
 .g-global-nav-main
   min-height $minHeight - 12px
@@ -25,24 +25,24 @@ ul.g-global-nav
     transition all 0.2s ease
 
   > li:hover:not(.g-active)
-    background #e8f4fb
+    background #fff3ee
 
     .g-nav-link
-      color #2A9D8F
+      color #E76F51
 
     i
-      color #2A9D8F
+      color #E76F51
 
   > li.g-active
-    background #e8f4fb
+    background #fff3ee
     border $navLinkBorder
-    box-shadow 0 8px 20px rgba(30,58,95,0.10)
+    box-shadow 0 8px 20px rgba(25,58,90,0.10)
 
     .g-nav-link
-      color #1E3A5F
+      color #193A5A
 
     i
-      color #2A9D8F
+      color #E76F51
 
 .g-nav-link
   display flex
@@ -52,13 +52,13 @@ ul.g-global-nav
   line-height 1.4
   font-size 17px
   font-weight 700
-  color #1E3A5F
+  color #193A5A
   text-decoration none
 
   &:hover
     text-decoration none
 
   i
-    color #2A9D8F
+    color #E76F51
     font-size 18px
     margin 0

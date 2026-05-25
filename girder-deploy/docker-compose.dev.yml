@@ -1,0 +1,110 @@
+# =============================================================================
+# DOCKER COMPOSE — SURCHARGES DEV
+# Utilisé sur une seule machine (laptop ou serveur de dev)
+#
+# Usage via start.sh (recommandé) :
+#   ./scripts/start.sh dev front
+#   ./scripts/start.sh dev worker
+#   ./scripts/start.sh dev all
+#
+# Usage direct :
+#   docker compose --env-file .env.dev \
+#     -f docker-compose.yml -f docker-compose.dev.yml \
+#     --profile front up -d
+# =============================================================================
+
+services:
+
+  girder-en-avant:
+    image: girder-en-avant:dev
+    build:
+      context: .
+      dockerfile: girder-en-avant/Dockerfile
+      target: dev
+      args:
+        BASE_IMAGE: girder-base:latest
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+    # idle : installe les packages et attend sans lancer Girder
+    # serve : lance Girder (avec debugpy si GIRDER_ENV=dev)
+    command: idle
+    profiles:
+      - en-avant
+      - all
+    environment:
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-}
+      GIRDER_ENV:   dev
+      DEBUGPY_PORT: 5678
+      DEBUGPY_WAIT: 0
+      SRC_GIRDER:        /opt/girder/src/girder
+      SRC_PLUGINS_FRONT: /opt/girder/src/plugins_front
+      INSTALL_PLUGINS_FRONT: ${INSTALL_PLUGINS_FRONT:-1}
+      GIRDER_ASSETSTORE_NAME: ${GIRDER_ASSETSTORE_NAME:-local}
+      GIRDER_ASSETSTORE_PATH: ${GIRDER_ASSETSTORE_PATH}
+      GIRDER_ADMIN_LOGIN: ${GIRDER_ADMIN_LOGIN:-admin}
+      GIRDER_ADMIN_PASSWORD: ${GIRDER_ADMIN_PASSWORD}
+      GIRDER_ADMIN_EMAIL: ${GIRDER_ADMIN_EMAIL}
+      GIRDER_ADMIN_FIRSTNAME: ${GIRDER_ADMIN_FIRSTNAME:-Admin}
+      GIRDER_ADMIN_LASTNAME: ${GIRDER_ADMIN_LASTNAME:-Girder}
+      GIRDER_URL: http://localhost:8080
+      BUILD_WEB_CLIENT: ${BUILD_WEB_CLIENT}
+      # URI MongoDB construite depuis les variables de .env.dev
+      GIRDER_MONGO_HOST: ${MONGO_HOST:-mongodb}
+      GIRDER_MONGO_PORT: ${MONGO_PORT:-27017}
+      GIRDER_MONGO_DB:   ${MONGO_DB:-girder}
+      CELERY_LOG_LEVEL: DEBUG
+      PROJECT_TEMPLATE: ${PROJECT_TEMPLATE:-thermolyse}
+    ports:
+      - "8080:8080"
+      - "5678:5678"
+    volumes:
+      - ../src/girder:/opt/girder/src/girder
+      - ../src/projects:/opt/girder/src/projects
+      - ../src/plugins_front:/opt/girder/src/plugins_front
+      - ${GIRDER_ASSETSTORE_PATH}:${GIRDER_ASSETSTORE_PATH}
+      - ./scripts/init_girder.py:/opt/girder/init_girder.py:ro
+      # Fichiers statiques du client web Girder (servis directement)
+    networks:
+      - ${MONGO_DOCKER_NETWORK:-girder-net}
+    restart: "no"
+
+  girder-en-arriere:
+    image: girder-en-arriere:dev
+    build:
+      context: .
+      dockerfile: girder-en-arriere/Dockerfile
+      target: dev
+      args:
+        BASE_IMAGE: girder-base:latest
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+    command: idle
+    profiles:
+      - en-arriere
+      - all
+    environment:
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-}
+      GIRDER_ENV:   dev
+      DEBUGPY_PORT: 5679
+      DEBUGPY_WAIT: 0
+      CELERY_LOGLEVEL: DEBUG
+      CELERY_CONCURRENCY: 1
+    ports:
+      - "5679:5679"
+    volumes:
+      - ./volumes/girder-data:/opt/girder/data
+    networks:
+      - ${MONGO_DOCKER_NETWORK:-girder-net}
+    restart: "no"
+
+# ── Réseau externe partagé avec le conteneur MongoDB ─────────────────────────
+networks:
+  girder-net:
+    external: true
+    name: ${MONGO_DOCKER_NETWORK:-girder-net}

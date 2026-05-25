@@ -1,0 +1,120 @@
+# =============================================================================
+# GIRDER-EN-AVANT — API REST + UI Web
+# Multi-stage : base-en-avant → dev | prod
+#
+# Usage :
+#   docker build --target dev  -t girder-en-avant:dev  -f girder-en-avant/Dockerfile .
+#   docker build --target prod -t girder-en-avant:prod -f girder-en-avant/Dockerfile .
+# =============================================================================
+
+ARG BASE_IMAGE=girder-base:latest
+FROM ${BASE_IMAGE} AS base-en-avant
+
+# Définir les variables de proxy comme arguments de build (optionnels)
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+
+# Si les arguments sont fournis, les exporter comme variables d'environnement
+RUN if [ -n "$HTTP_PROXY" ]; then \
+    echo "export http_proxy=$HTTP_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export HTTP_PROXY=$HTTP_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export https_proxy=$HTTPS_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export HTTPS_PROXY=$HTTPS_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export no_proxy=$NO_PROXY" >> /etc/profile.d/proxy.sh && \
+    echo "export NO_PROXY=$NO_PROXY" >> /etc/profile.d/proxy.sh; \
+    fi
+
+# ── Dépendances système spécifiques au front ─────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmagic1 \
+    libmagic-dev \
+    libssl-dev \
+    libffi-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Node.js 20 via NodeSource  ─────
+RUN apt-get update \
+    && apt-get install -y curl ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && node --version \
+    && npm --version
+
+# Configurer npm pour utiliser le proxy SI les variables sont définies
+RUN if [ -n "$HTTP_PROXY" ]; then \
+      npm config set proxy "$HTTP_PROXY" && \
+      npm config set https-proxy "$HTTPS_PROXY" && \
+      npm config set strict-ssl false; \
+    else \
+      echo "No proxy configured for npm."; \
+    fi    
+
+# ── Dossier static accessible en écriture par l'user girder ──────────────────
+RUN mkdir -p /usr/share/girder/static \
+    && chown -R girder:girder /usr/share/girder
+
+# ── PATH global pour les scripts pip installés en user non-root ──────────────
+ENV PATH="/home/girder/.local/bin:$PATH" \
+    NODE_OPTIONS="--openssl-legacy-provider"
+
+EXPOSE 8080
+
+# =============================================================================
+# STAGE DEV
+# =============================================================================
+FROM base-en-avant AS dev
+
+ENV GIRDER_ENV=dev \
+    GIRDER_PORT=8080 \
+    GIRDER_HOST=0.0.0.0 \
+    DEBUGPY_PORT=5678 \
+    DEBUGPY_WAIT=0
+
+RUN pip install debugpy
+
+COPY --chown=girder:girder girder-en-avant/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER girder
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["idle"]
+
+# =============================================================================
+# STAGE PROD
+# =============================================================================
+FROM base-en-avant AS prod
+
+ARG PROJECT_TEMPLATE=thermolyse
+ENV PROJECT_TEMPLATE=${PROJECT_TEMPLATE} \
+    GIRDER_ENV=prod \
+    GIRDER_PORT=8080 \
+    GIRDER_HOST=0.0.0.0
+
+COPY --chown=girder:girder src/girder/ /opt/girder/src/girder/
+COPY --chown=girder:girder src/projects/ /opt/girder/src/projects/
+COPY --chown=girder:girder src/plugins_front/ /opt/girder/src/plugins_front/
+COPY --chown=girder:girder girder-deploy/scripts/apply-template.sh /opt/girder/apply-template.sh
+
+RUN chmod +x /opt/girder/apply-template.sh \
+    && /opt/girder/apply-template.sh
+
+RUN pip install /opt/girder/src/girder/
+
+RUN cd /opt/girder/src/girder/girder/web \
+    && npm install \
+    && npm run build
+
+COPY --chown=girder:girder girder-en-avant/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER girder
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["serve"]

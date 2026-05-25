@@ -1,0 +1,61 @@
+# =============================================================================
+# DOCKER COMPOSE — SURCHARGES PROD
+#
+# Machine DMZ (girder-en-avant uniquement) :
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --profile front up -d
+#
+# Machine de calcul (girder-en-arriere uniquement) :
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --profile worker up -d
+#
+# Les deux sur la même machine (rare, tests uniquement) :
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =============================================================================
+
+services:
+
+  girder-en-avant:
+    image: girder-en-avant:prod
+    # En prod : l'image est autonome, pas de volume src
+    # Le code est copié dans l'image au moment du build
+    environment:
+      GIRDER_ENV: prod
+      # En prod ces valeurs viennent d'un fichier .env.prod (jamais commité)
+      GIRDER_MONGO_HOST: ${MONGO_HOST}
+      GIRDER_MONGO_PORT: ${MONGO_PORT:-27017}
+      GIRDER_MONGO_DB:   ${MONGO_DB:-girder}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "${GIRDER_FRONT_PORT:-8080}:8080"
+      # Pas de port debugpy en prod
+    volumes:
+      # Données persistantes uniquement, pas de sources
+      - ${GIRDER_DATA_PATH}:/opt/girder/data
+    restart: always
+    profiles:
+      - front
+      - all
+
+  girder-en-arriere:
+    image: girder-en-arriere:prod
+    environment:
+      GIRDER_ENV: prod
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      GIRDER_MONGO_HOST: ${MONGO_HOST}
+      GIRDER_MONGO_PORT: ${MONGO_PORT:-27017}
+      GIRDER_MONGO_DB:   ${MONGO_DB:-girder}
+      CELERY_LOGLEVEL:    INFO
+      CELERY_CONCURRENCY: ${CELERY_CONCURRENCY:-4}
+    volumes:
+      - ${GIRDER_DATA_PATH}:/opt/girder/data
+    restart: always
+    profiles:
+      - worker
+      - all

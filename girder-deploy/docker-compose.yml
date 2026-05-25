@@ -1,0 +1,68 @@
+# =============================================================================
+# DOCKER COMPOSE — BASE COMMUNE
+# Ne pas utiliser seul. Toujours combiner avec dev ou prod :
+#
+#   Dev  : docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#   Prod : docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+#
+# Raccourcis via les scripts :
+#   ./scripts/start-dev.sh
+#   ./scripts/start-prod.sh
+# =============================================================================
+
+services:
+
+  # ── girder-en-avant : API REST + UI Web ──────────────────────────────────
+  girder-en-avant:
+    image: girder-en-avant:${GIRDER_ENV:-dev}
+    container_name: girder-en-avant
+    restart: unless-stopped
+    environment:
+      # MongoDB — conteneur sur le réseau girder-net (nom = mongodb)
+      GIRDER_MONGO_HOST: ${MONGO_HOST:-mongodb}
+      GIRDER_MONGO_PORT: ${MONGO_PORT:-27017}
+      GIRDER_MONGO_DB:   ${MONGO_DB:-girder}
+      # RabbitMQ — sur l'hôte (apt), accessible via host-gateway
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-host.docker.internal}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      # Girder
+      GIRDER_ENV:  ${GIRDER_ENV:-dev}
+      GIRDER_HOST: 0.0.0.0
+      GIRDER_PORT: 8080
+    ports:
+      - "${GIRDER_FRONT_PORT:-8080}:8080"
+    volumes:
+      # Données persistantes Girder — TOUJOURS en volume (dev et prod)
+      - ${GIRDER_DATA_PATH:-./volumes/girder-data}:/opt/girder/data
+    # Nécessaire uniquement pour RabbitMQ sur l'hôte.
+    # MongoDB est joignable via le réseau Docker girder-net (déclaré dans dev/prod).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ── girder-en-arriere : Celery Worker ────────────────────────────────────────
+  girder-en-arriere:
+    image: girder-en-arriere:${GIRDER_ENV:-dev}
+    container_name: girder-en-arriere
+    restart: unless-stopped
+    environment:
+      # RabbitMQ — sur l'hôte (apt), accessible via host-gateway
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-host.docker.internal}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      # MongoDB — conteneur sur le réseau girder-net (nom = mongodb)
+      GIRDER_MONGO_HOST: ${MONGO_HOST:-mongodb}
+      GIRDER_MONGO_PORT: ${MONGO_PORT:-27017}
+      GIRDER_MONGO_DB:   ${MONGO_DB:-girder}
+      # Worker
+      GIRDER_ENV:         ${GIRDER_ENV:-dev}
+      CELERY_LOGLEVEL:    ${CELERY_LOGLEVEL:-INFO}
+      CELERY_CONCURRENCY: ${CELERY_CONCURRENCY:-2}
+    volumes:
+      # Accès aux mêmes fichiers que girder-en-avant (fichiers uploadés à traiter)
+      - ${GIRDER_DATA_PATH:-./volumes/girder-data}:/opt/girder/data
+    # Nécessaire uniquement pour RabbitMQ sur l'hôte.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -10,16 +10,15 @@ const translations = {
         'Collections': 'Collections',
         'Groups': 'Groupes',
         'Medical data': 'Données médicales',
-        'Secure management of research datasets and imaging files.': 'Gestion sécurisée des jeux de données de recherche et des fichiers d’imagerie.',
-        'Dedicated tools for processing, visualization and scientific workflows.': 'Outils dédiés au traitement, à la visualisation et aux workflows scientifiques.',
-        'Interactive access to collections, results and collaborative resources.': 'Accès interactif aux collections, résultats et ressources collaboratives.',
-        'Access your files and datasets.': 'Accéder à vos fichiers et jeux de données.',
         'Browse shared project collections.': 'Parcourir les collections partagées du projet.',
+        'Access your files and datasets.': 'Accéder à vos fichiers et jeux de données.',
         'Collaborate with research teams.': 'Collaborer avec les équipes de recherche.',
         'Launch interactive visualization tools.': 'Lancer les outils de visualisation interactive.',
-        'Thermolyse': 'Thermolyse',
-        'Smart IT': 'Smart IT',
-        'OPLA': 'OPLA'
+        'Project overview': 'Présentation du projet',
+        'Key competencies': 'Compétences clés',
+        'Consortium & partners': 'Consortium & partenaires',
+        'Research workpackages': 'Axes de travail',
+        'About the platform': 'À propos de la plateforme'
     },
     german: {
         'Login': 'Anmelden',
@@ -32,13 +31,19 @@ const translations = {
         'Collections': 'Sammlungen',
         'Groups': 'Gruppen',
         'Medical data': 'Medizinische Daten',
-        'Thermolyse': 'Thermolyse',
-        'Smart IT': 'Smart IT',
-        'OPLA': 'OPLA'
+        'Browse shared project collections.': 'Freigegebene Projektsammlungen durchsuchen.',
+        'Access your files and datasets.': 'Auf Ihre Dateien und Datensätze zugreifen.',
+        'Collaborate with research teams.': 'Mit Forschungsteams zusammenarbeiten.',
+        'Launch interactive visualization tools.': 'Interaktive Visualisierungswerkzeuge starten.',
+        'Project overview': 'Projektübersicht',
+        'Key competencies': 'Kernkompetenzen',
+        'Consortium & partners': 'Konsortium & Partner',
+        'Research workpackages': 'Arbeitspakete',
+        'About the platform': 'Über die Plattform'
     }
 };
 
-let currentLanguage = 'french';
+let currentLanguage = window.localStorage.getItem('girderLanguage') || 'french';
 
 export function translate(key) {
     if (currentLanguage !== 'english' && translations[currentLanguage] && translations[currentLanguage][key]) {
@@ -50,6 +55,7 @@ export function translate(key) {
 export function setLanguage(language) {
     if (language === 'english' || language === 'french' || language === 'german') {
         currentLanguage = language;
+        window.localStorage.setItem('girderLanguage', language);
         window.dispatchEvent(new Event('languageChanged'));
     }
 }
@@ -72,10 +78,4 @@ export function setTranslation(key, value, language = currentLanguage) {
     translations[language][key] = value;
 }
 
-export default {
-    translate,
-    setLanguage,
-    getCurrentLanguage,
-    getTranslations,
-    setTranslation
-};
+export default { translate, setLanguage, getCurrentLanguage, getTranslations, setTranslation };
