@@ -1,0 +1,6 @@
+    {
+    "name": "imrt-plugin-web-client",
+    "version": "0.1.0",
+    "main": "main.js",
+    "dependencies": {}
+    }

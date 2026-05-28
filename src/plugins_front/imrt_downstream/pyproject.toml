@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imrt-downstream"
+version = "0.1.0"
+dependencies = [
+    "girder",
+    "girder-jobs"
+]
+
+[project.entry-points."girder.plugin"]
+imrt_downstream = "imrt_downstream:ImrtDownstreamPlugin"
+
+[tool.setuptools.packages.find]
+where = ["."]

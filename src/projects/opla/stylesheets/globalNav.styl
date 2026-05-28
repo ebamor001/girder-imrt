@@ -1,3 +1,26 @@
+body:not(.g-landing-page-active)
+  #g-global-nav-container
+    top 74px !important
+    height calc(100vh - 74px) !important
+
+  #g-app-footer-container
+    background #ffffff !important
+    border-top 1px solid rgba(231,111,81,0.12)
+
+body:not(.g-landing-page-active):not(:has(.g-dashboard-shell))
+  #g-app-body-container
+    padding-top 96px !important
+
+.g-main-content,
+.g-body-container
+  padding 28px 36px !important
+
+.g-view-container
+  background #ffffff
+  border 1px solid rgba(231,111,81,0.14)
+  border-radius 24px
+  padding 28px
+  box-shadow 0 16px 45px rgba(25,58,90,0.08)
 $navLinkBorder=1px solid rgba(123,44,191,0.18)
 $emptyBorder=1px solid transparent
 $minHeight=500px

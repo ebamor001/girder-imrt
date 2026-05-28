@@ -1,0 +1,15 @@
+Bonjour $PERSON_NAME,
+
+Votre traitement IMRT est terminé avec succès.
+
+Détails du traitement :
+
+- Job : $JOB_NAME
+- Heure de début : $START_HOUR
+- Heure de fin : $END_HOUR
+- Fichier traité : $PROCESSED_FILE
+
+Vous pouvez maintenant consulter les résultats sur la plateforme.
+
+Cordialement,
+Plateforme IMRT

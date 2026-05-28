@@ -96,3 +96,23 @@ J’ai ajouté une page de sélection de projet permettant de choisir entre :
 - Thermolyse
 - SmartIT
 - OPLA
+
+
+##22 mai 2026
+
+## Mise en place de la nouvelle architecture
+
+Réorganisation du projet selon la structure demandée :
+
+```text
+girder-imrt/
+├── girder-deploy/
+├── src/
+│   ├── girder
+│   ├── projects
+│   ├── plugins_front
+│   └── plugins_worker
+└── volumes/
+```
+
+Mise à jour Docker (Migration Girder 5)

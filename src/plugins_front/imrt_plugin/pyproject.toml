@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imrt-plugin"
+version = "0.1.0"
+description = "IMRT backend API plugin for Girder"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "girder>=5.0.0b1",
+    "girder-jobs>=5.0.0b1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.entry-points."girder.plugin"]
+imrt_plugin = "imrt_plugin:ImrtPlugin"

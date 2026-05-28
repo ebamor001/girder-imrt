@@ -1,24 +1,82 @@
 # Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
 .venv/
 venv/
-__pycache__/
-*.pyc
+env/
+ENV/
 
-# Node
+# Python packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# Editable installs / local package metadata
+*.egg
+*.whl
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
 node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vite/
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+
+# Built frontend files
+# À garder ignoré sauf si tu dois versionner volontairement un build final
 dist/
 build/
 
-# Env
+# Girder / local runtime
+girder.local.cfg
+girder.dist.cfg
+*.log
+
+# Local data volumes
+volumes/
+data/
+assetstore/
+db/
+mongo/
+redis/
+
+# Docker / local env secrets
 .env
 .env.*
+!.env.example
 
-# OS / IDE
-.DS_Store
+# SMTP / secrets
+settings.json
+secrets.json
+*_secret*.json
+
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Volumes / data
-volumes/
-girder-deploy/volumes/
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/

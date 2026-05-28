@@ -1,0 +1,15 @@
+Bonjour $PERSON_NAME,
+
+Votre traitement IMRT a été annulé.
+
+Détails du traitement :
+
+- Job : $JOB_NAME
+- Heure de début : $START_HOUR
+- Heure de fin : $END_HOUR
+- Fichier concerné : $PROCESSED_FILE
+
+Aucun résultat final n’a été généré pour ce traitement.
+
+Cordialement,
+Plateforme IMRT

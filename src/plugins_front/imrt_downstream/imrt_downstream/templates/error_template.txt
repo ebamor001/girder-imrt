@@ -1,0 +1,15 @@
+Bonjour $PERSON_NAME,
+
+Votre traitement IMRT s’est terminé avec une erreur.
+
+Détails du traitement :
+
+- Job : $JOB_NAME
+- Heure de début : $START_HOUR
+- Heure de fin : $END_HOUR
+- Fichier traité : $PROCESSED_FILE
+
+Veuillez vérifier les logs du job sur la plateforme Girder.
+
+Cordialement,
+Plateforme IMRT
