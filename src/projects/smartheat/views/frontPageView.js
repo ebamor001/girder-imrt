@@ -13,7 +13,7 @@ import {
 import '@girder/core/stylesheets/body/frontPage.styl';
 
 const PROJECT = {
-    "title": "Smart IT",
+    "title": "SmartHeat",
     "subtitle": "Smart tools for medical imaging workflows",
     "short": "AI-ready workspace for medical imaging, data processing and visualization tools.",
     "icon": "🧠",

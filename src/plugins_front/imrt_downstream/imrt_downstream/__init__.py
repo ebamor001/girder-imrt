@@ -10,7 +10,6 @@ from girder.models.setting import Setting
 from girder.settings import SettingKey
 from girder.utility import mail_utils
 from girder_jobs.models.job import Job
-from girder_jobs.models.job import Job
 from html import escape
 
 
@@ -181,11 +180,6 @@ def send_job_mail(job: dict):
 
         logger.info("Mail sent to %s for job %s", user_email, job.get("_id"))
 
-        job.setdefault("meta", {}).setdefault("imrt", {})["emailSent"] = True
-        Job().save(job)
-
-        logger.info("Mail sent to %s for job %s", user_email, job.get("_id"))
-
     except Exception:
         logger.exception("Mail sending failed for job %s", job.get("_id"))
         return
@@ -195,10 +189,7 @@ def validate_job_status(event):
     try:
         job = event.info.get("job")
 
-        if not job:
-            return
-
-        if not should_handle_job(job):
+        if not job or not should_handle_job(job):
             return
 
         status = job.get("status")
@@ -232,8 +223,10 @@ class ImrtDownstreamPlugin(plugin.GirderPlugin):
         print("Loading IMRT Downstream")
         print("############################")
 
+        #lit settings.json et configure SMTP dans Girder
         set_mail_settings()
 
+        #À chaque fois qu’un job est mis à jour, appelle validate_job_status
         events.bind(
             "jobs.job.update.after",
             "imrt_downstream_job_update",

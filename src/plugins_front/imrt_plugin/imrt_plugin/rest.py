@@ -35,20 +35,14 @@ class ImrtPluginResource(Resource):
             raise Exception("Job not found")
 
         progress = job.get("progress") or {}
-        current = progress.get("current", 0)
-        total = progress.get("total", 1)
-
-        percent = 0
-        if total:
-            percent = round((current / total) * 100, 2)
 
         return {
             "id": str(job["_id"]),
             "title": job.get("title"),
             "status": job.get("status"),
             "progress": progress,
-            "progressPercent": percent,
             "progressMessage": progress.get("message", ""),
+            "meta": job.get("meta") or {},
         }
 
     @access.user(cookie=True)
@@ -70,23 +64,17 @@ class ImrtPluginResource(Resource):
 
         for job in jobs:
             progress = job.get("progress") or {}
-            current = progress.get("current", 0)
-            total = progress.get("total", 1)
-
-            percent = 0
-            if total:
-                percent = round((current / total) * 100, 2)
-
+            
             result.append(
                 {
                     "id": str(job["_id"]),
                     "title": job.get("title"),
                     "status": job.get("status"),
                     "progress": progress,
-                    "progressPercent": percent,
                     "progressMessage": progress.get("message", ""),
                     "created": str(job.get("created")),
                     "updated": str(job.get("updated")),
+                    "meta": job.get("meta") or {},
                 }
             )
 
@@ -111,7 +99,7 @@ class ImrtPluginResource(Resource):
         job_model = Job()
 
         job = job_model.createJob(
-            title="IMRT Progress Test Email",
+            title="IMRT Progress Test",
             type="imrt_progress_test",
             handler="worker_handler",
             user=user,
@@ -122,10 +110,11 @@ class ImrtPluginResource(Resource):
                 "celeryTaskName": "imrt_worker.tasks.progressTest",
                 "meta": {
                     "imrt": {
+                        #est-ce que le downstream IMRT doit traiter ce job
                         "enabled": True,
-                        "notifyEmail": parse_bool(params.get("notifyEmail"), default=False),
+                        "notifyEmail": notify_email,
                         "datasetName": "progress_test",
-                        "processedFile": "progress_test",
+                        "processedFile": "test de progression",
                         "userFullName": user_fullname,
                         "userEmail": to_email,
                     }

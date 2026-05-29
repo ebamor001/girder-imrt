@@ -3,7 +3,7 @@
 Le frontend Girder peut être personnalisé pour plusieurs projets :
 
 - Thermolyse
-- Smart IT
+- SmartHeat
 - OPLA
 
 Le projet utilisé est choisi avec la variable d’environnement :
@@ -34,7 +34,7 @@ npm run dev
 Autres valeurs possibles :
 
 ```bash
-PROJECT_TEMPLATE=smart_it
+PROJECT_TEMPLATE=smartheat
 PROJECT_TEMPLATE=opla
 ```
 
@@ -43,7 +43,7 @@ Les fichiers de personnalisation sont stockés dans :
 ```bash
 src/projects/
 ├── thermolyse
-├── smart_it
+├── smartheat
 └── opla
 ```
 
